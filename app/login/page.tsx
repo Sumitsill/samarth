@@ -116,32 +116,32 @@ function LoginContent() {
                 <div className="w-full max-w-[440px]">
 
                     {/* Tabs */}
-                    <div className="grid grid-cols-3 bg-black/40 border border-white/5 backdrop-blur-md rounded-xl p-1.5 mb-[2px]">
+                    <div className="grid grid-cols-3 bg-black/40 border border-white/5 backdrop-blur-md rounded-xl p-1 sm:p-1.5 mb-[2px]">
                         <button
                             type="button"
                             onClick={() => setActiveRole("civilian")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg text-[11px] font-bold tracking-wider transition-all
+                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
                             ${activeRole === "civilian" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
                         >
-                            <User className={`w-5 h-5 mb-0.5 ${activeRole === "civilian" ? "text-white" : "text-slate-500"}`} />
+                            <User className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "civilian" ? "text-white" : "text-slate-500"}`} />
                             CITIZEN
                         </button>
                         <button
                             type="button"
                             onClick={() => setActiveRole("worker")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg text-[11px] font-bold tracking-wider transition-all
+                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
                             ${activeRole === "worker" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
                         >
-                            <Landmark className={`w-5 h-5 mb-0.5 ${activeRole === "worker" ? "text-white" : "text-slate-500"}`} />
+                            <Landmark className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "worker" ? "text-white" : "text-slate-500"}`} />
                             OFFICIAL
                         </button>
                         <button
                             type="button"
                             onClick={() => setActiveRole("contractor")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg text-[11px] font-bold tracking-wider transition-all
+                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
                             ${activeRole === "contractor" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
                         >
-                            <Building2 className={`w-5 h-5 mb-0.5 ${activeRole === "contractor" ? "text-white" : "text-slate-500"}`} />
+                            <Building2 className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "contractor" ? "text-white" : "text-slate-500"}`} />
                             CORPORATE
                         </button>
                     </div>
@@ -271,7 +271,7 @@ function LoginContent() {
                 </div>
 
                 {/* Footer */}
-                <div className="mt-[72px] flex items-center gap-3 text-slate-500 text-[11px] font-bold tracking-[0.16em]">
+                <div className="mt-8 sm:mt-[72px] pb-6 flex items-center gap-3 text-slate-500 text-[10px] sm:text-[11px] font-bold tracking-[0.16em]">
                     <Shield className="w-4 h-4 opacity-70" />
                     <span>SECURE 256-BIT AES ENCRYPTED ACCESS</span>
                 </div>
