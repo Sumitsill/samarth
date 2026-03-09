@@ -81,17 +81,17 @@ function LoginContent() {
                 <div className="absolute inset-0 z-[-1] bg-gradient-to-b from-indigo-950/20 to-black/40 pointer-events-none" />
 
                 {/* Home Button */}
-                <div className="absolute top-6 left-6">
+                <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
                     <Link href="/">
-                        <Button variant="ghost" className="text-slate-400 hover:text-white flex items-center gap-2 hover:bg-slate-800/50">
+                        <Button variant="ghost" className="text-slate-400 hover:text-white flex items-center gap-1.5 hover:bg-slate-800/50 h-9 px-3">
                             <Home className="w-4 h-4" />
-                            <span className="text-xs font-semibold tracking-wider">BACK TO HOME</span>
+                            <span className="text-[10px] sm:text-xs font-semibold tracking-wider">BACK</span>
                         </Button>
                     </Link>
                 </div>
 
                 {/* Logo Section */}
-                <div className="mb-6 flex flex-col items-center gap-4">
+                <div className="mt-16 sm:mt-0 mb-6 flex flex-col items-center gap-4">
                     <div className="flex items-center justify-center gap-3">
                         <div className="w-10 h-10 bg-indigo-600/20 border border-indigo-600/30 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.2)]">
                             <ShieldCheck className="w-6 h-6 text-indigo-500" />

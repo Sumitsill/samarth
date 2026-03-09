@@ -23,11 +23,11 @@ export default function WelcomePage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/50 shrink-0">
                 <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <GradientText className="text-xl sm:text-2xl font-bold tracking-tight truncate hidden xs:block">SAMARTH</GradientText>
+              <GradientText className="text-xl sm:text-2xl font-bold tracking-tight truncate block">SAMARTH</GradientText>
             </Link>
           </div>
 
-          <div className="flex flex-none justify-end items-center gap-2 sm:gap-4">
+          <div className="flex flex-none justify-end items-center gap-1 sm:gap-4">
             <LanguageSelector />
             <Link href="/login" className="shrink-0">
               <Button variant="ghost" className="text-sm font-semibold leading-6 text-white h-10 px-2 sm:px-4">
