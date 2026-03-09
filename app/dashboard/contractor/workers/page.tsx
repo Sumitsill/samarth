@@ -148,10 +148,10 @@ export default function WorkersPage() {
                         </h1>
                         <p className="text-slate-400 font-medium text-lg ml-1">Live assignment and dynamic tracking for <span className="text-indigo-400 font-bold">Delhi Region</span> workers.</p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col xl:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
                         <Button
                             onClick={() => setIsOnboarding(true)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 h-12 px-6 rounded-2xl font-bold"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 h-12 px-6 rounded-2xl font-bold w-full xl:w-auto"
                         >
                             <UserPlus className="w-4 h-4 mr-2" /> ONBOARD WORKER
                         </Button>

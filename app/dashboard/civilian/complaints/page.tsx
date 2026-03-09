@@ -180,8 +180,8 @@ export default function ComplaintsListingPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                    <Link href="/dashboard/civilian/complaints/new">
-                        <Button className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 h-12 rounded-2xl shadow-lg shadow-indigo-600/20 group transition-all hover:scale-105 active:scale-95">
+                    <Link href="/dashboard/civilian/complaints/new" className="block w-full sm:w-auto">
+                        <Button className="bg-indigo-600 hover:bg-indigo-500 text-white w-full px-6 h-12 rounded-2xl shadow-lg shadow-indigo-600/20 group transition-all hover:scale-105 active:scale-95">
                             <Plus className="mr-2 w-5 h-5 group-hover:rotate-90 transition-transform" /> File New Report
                         </Button>
                     </Link>
@@ -204,7 +204,7 @@ export default function ComplaintsListingPage() {
                         className="bg-[#0E0F17]/80 backdrop-blur-md border-slate-800 pl-10 h-11 focus-visible:ring-indigo-600/50 rounded-xl"
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-start">
                     {['all', 'pending', 'in-progress', 'resolved'].map((status) => (
                         <Button
                             key={status}

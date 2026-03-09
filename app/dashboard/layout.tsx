@@ -33,13 +33,23 @@ export default function DashboardLayout({
     const { user, role, isLoading } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+        if (window.innerWidth >= 768) {
+            setIsSidebarOpen(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (!isLoading && !user) {
             router.push("/login");
         }
     }, [user, isLoading, router]);
+
+    if (!isMounted) return null;
 
     if (isLoading || !user) {
         return (
@@ -74,15 +84,23 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen text-slate-50 flex bg-transparent">
+        <div className="min-h-screen text-slate-50 flex bg-transparent relative">
+            {/* Mobile Sidebar Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside className={cn(
-                "bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col z-50",
-                isSidebarOpen ? "w-64" : "w-20"
+                "bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col z-50 fixed md:relative h-full",
+                isSidebarOpen ? "w-64 translate-x-0" : "w-0 md:w-20 -translate-x-full md:translate-x-0 overflow-hidden"
             )}>
-                <div className="p-6 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-6 h-6 text-white" />
+                <div className="p-4 sm:p-6 flex items-center gap-3 shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     {isSidebarOpen && (
                         <span className="text-xl font-bold tracking-tight">
@@ -130,24 +148,24 @@ export default function DashboardLayout({
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+            <main className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
+                <header className="h-16 sm:h-20 border-b border-slate-800 flex items-center justify-between px-4 sm:px-8 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 gap-2">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
                             <Menu className="w-5 h-5" />
                         </Button>
-                        <h2 className="text-xl font-semibold capitalize">
+                        <h2 className="text-lg sm:text-xl font-semibold capitalize truncate">
                             <GradientText colors={['#ffffff', '#cbd5e1', '#ffffff']}>
                                 {pathname.split('/').pop()?.replace(/-/g, ' ')}
                             </GradientText>
                         </h2>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                         <LanguageSelector />
-                        <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-slate-300">
+                        <Button variant="outline" size="sm" className="hidden xs:flex bg-slate-800 border-slate-700 text-slate-300 h-8 sm:h-9">
                             Support
                         </Button>
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
                             <Settings className="w-4 h-4 text-slate-400" />
                         </div>
                     </div>

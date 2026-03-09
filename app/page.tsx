@@ -17,27 +17,30 @@ export default function WelcomePage() {
           <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
         </div>
 
-        <nav className="flex items-center justify-between p-6 lg:px-8 max-w-7xl mx-auto" aria-label="Global">
-          <div className="flex lg:flex-1">
+        <nav className="flex items-center justify-between p-4 sm:p-6 lg:px-8 max-w-7xl mx-auto gap-4" aria-label="Global">
+          <div className="flex flex-1 min-w-0">
             <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/50">
-                <ShieldCheck className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/50 shrink-0">
+                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <GradientText className="text-2xl font-bold tracking-tight">SAMARTH</GradientText>
+              <GradientText className="text-xl sm:text-2xl font-bold tracking-tight truncate">SAMARTH</GradientText>
             </Link>
           </div>
 
-          <div className="lg:flex lg:flex-1 lg:justify-end items-center gap-4">
+          <div className="flex flex-1 justify-end items-center gap-2 sm:gap-4">
             <LanguageSelector />
-            <Link href="/login">
-              <Button variant="ghost" className="text-sm font-semibold leading-6 text-white h-10">Log in <ArrowRight className="ml-2 w-4 h-4" /></Button>
+            <Link href="/login" className="shrink-0">
+              <Button variant="ghost" className="text-sm font-semibold leading-6 text-white h-10 px-2 sm:px-4">
+                <span className="hidden xs:inline">Log in</span>
+                <ArrowRight className="sm:ml-2 w-4 h-4" />
+              </Button>
             </Link>
           </div>
         </nav>
 
-        <div className="mx-auto max-w-7xl py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl py-12 sm:py-24 lg:py-32 px-4 sm:px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl pb-4">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-6xl pb-4">
               <GradientText direction="vertical" colors={['#ffffff', '#64748b', '#ffffff']}>
                 Empowering Citizens.<br />Strengthening Governance.
               </GradientText>

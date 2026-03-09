@@ -94,13 +94,13 @@ export default function CorporateBoothAnalyticsDashboard() {
                         </h1>
                         <p className="text-slate-400 font-medium text-lg ml-1">Hyper-local governance, accountability mapping, and beneficiary linkage portal.</p>
                     </div>
-                    <div className="flex gap-4">
-                        <Button variant="outline" className="bg-slate-900 border-slate-800 text-slate-300 h-12 px-6 rounded-2xl">
+                    <div className="flex flex-col xl:flex-row gap-4 w-full md:w-auto">
+                        <Button variant="outline" className="bg-slate-900 border-slate-800 text-slate-300 h-12 px-6 rounded-2xl w-full xl:w-auto">
                             <Settings className="w-4 h-4 mr-2" /> Global Config
                         </Button>
                         <Button
                             onClick={() => setIsResynced(true)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 h-12 px-6 rounded-2xl font-bold"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20 h-12 px-6 rounded-2xl font-bold w-full xl:w-auto"
                         >
                             <Activity className="w-4 h-4 mr-2" /> RE-SYNC BOOTH DATA
                         </Button>
