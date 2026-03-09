@@ -39,10 +39,12 @@ export function LanguageSelector() {
             <Button
                 variant="ghost"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`text-sm font-semibold h-10 px-4 flex items-center gap-2 transition-all rounded-full ${isOpen ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30' : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white shadow-lg'}`}
+                className={`text-sm font-semibold h-10 px-3 sm:px-4 flex items-center gap-2 transition-all rounded-full ${isOpen ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30' : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white shadow-lg'}`}
             >
                 <Languages className="w-4 h-4" />
-                {currentLang === 'en' ? 'Language' : 'भाषा'}
+                <span className="hidden sm:inline">
+                    {currentLang === 'en' ? 'Language' : 'भाषा'}
+                </span>
             </Button>
 
             {isOpen && (

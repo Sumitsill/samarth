@@ -18,16 +18,16 @@ export default function WelcomePage() {
         </div>
 
         <nav className="flex items-center justify-between p-4 sm:p-6 lg:px-8 max-w-7xl mx-auto gap-4" aria-label="Global">
-          <div className="flex flex-1 min-w-0">
-            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+          <div className="flex flex-1 min-w-0 items-center">
+            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2 overflow-hidden">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/50 shrink-0">
                 <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <GradientText className="text-xl sm:text-2xl font-bold tracking-tight truncate">SAMARTH</GradientText>
+              <GradientText className="text-xl sm:text-2xl font-bold tracking-tight truncate hidden xs:block">SAMARTH</GradientText>
             </Link>
           </div>
 
-          <div className="flex flex-1 justify-end items-center gap-2 sm:gap-4">
+          <div className="flex flex-none justify-end items-center gap-2 sm:gap-4">
             <LanguageSelector />
             <Link href="/login" className="shrink-0">
               <Button variant="ghost" className="text-sm font-semibold leading-6 text-white h-10 px-2 sm:px-4">
