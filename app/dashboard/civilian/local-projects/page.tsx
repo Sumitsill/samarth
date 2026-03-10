@@ -4,18 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useDataStore, Project } from "@/store/useDataStore";
 import dynamic from 'next/dynamic';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibregl from 'maplibre-gl';
-
-// Dynamically import the entire Map container to ensure all children components (Markers, Layers) 
-// share the same map context and avoid SSR/Initialization race conditions.
-const ConstituencyMap = dynamic(() => Promise.resolve(LocalProjectMap), {
-    ssr: false,
-    loading: () => <div className="w-full h-full bg-slate-900/50 animate-pulse flex items-center justify-center text-slate-500 font-medium border border-slate-800 rounded-3xl">Initializing Intelligence Engine...</div>
-});
-
-// Import map components only for the client-side component
-import { Map, Marker, NavigationControl, Source, Layer } from "react-map-gl/maplibre";
+import { GoogleMap, useJsApiLoader, MarkerF, HeatmapLayerF } from '@react-google-maps/api';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +22,35 @@ import { MapPin, Calendar, IndianRupee, HardHat, TrendingUp } from "lucide-react
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// Ola Maps Configuration
-const OLA_MAPS_API_KEY = "985bdd6a5c48557a5dd09642bb748d38";
-const OLA_MAPS_STYLE_URL = `https://api.olamaps.io/tiles/vector/v1/styles/default-dark-standard/style.json?api_key=${OLA_MAPS_API_KEY}`;
+// Google Maps Configuration
+const GOOGLE_MAPS_API_KEY = "AIzaSyBToEOs4jFNTl_DSDUGqUcUFTFKdDPThAE";
+const LIBRARIES: ("visualization" | "places")[] = ["visualization"];
+
+const DARK_MAP_STYLE = [
+    { "elementType": "geometry", "stylers": [{ "color": "#0E0F17" }] },
+    { "elementType": "labels.text.stroke", "stylers": [{ "color": "#0E0F17" }] },
+    { "elementType": "labels.text.fill", "stylers": [{ "color": "#746855" }] },
+    { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+    { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+    { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#181A26" }] },
+    { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{ "color": "#6b9a76" }] },
+    { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1C1E2D" }] },
+    { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#212a37" }] },
+    { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#9ca5b3" }] },
+    { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#242A3E" }] },
+    { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
+    { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#f3d19c" }] },
+    { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#2f3948" }] },
+    { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0B0C14" }] },
+    { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#515c6d" }] },
+    { "featureType": "water", "elementType": "labels.text.stroke", "stylers": [{ "color": "#0B0C14" }] }
+];
+
+const ConstituencyMap = dynamic(() => Promise.resolve(LocalProjectMap), {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-slate-900/50 animate-pulse flex items-center justify-center text-slate-500 font-medium border border-slate-800 rounded-3xl">Initializing Map Intelligence...</div>
+});
 
 const DELHI_PROJECTS: Project[] = [
     {
@@ -179,16 +194,12 @@ export default function LocalProjectsPage() {
         });
     }, [projects, projectFilters]);
 
-    // Heatmap GeoJSON formatting
-    const heatmapData = useMemo(() => {
-        return {
-            type: 'FeatureCollection',
-            features: filteredProjects.map(p => ({
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [p.coordinates.lng, p.coordinates.lat] },
-                properties: { weight: 1 } // uniform weight for each project
-            }))
-        };
+    // Heatmap points for Google Maps
+    const heatmapPoints = useMemo(() => {
+        return filteredProjects.map(p => ({
+            lat: p.coordinates.lat,
+            lng: p.coordinates.lng
+        }));
     }, [filteredProjects]);
 
     return (
@@ -247,7 +258,7 @@ export default function LocalProjectsPage() {
                     <div className="w-full h-full relative">
                         <ConstituencyMap
                             projects={filteredProjects}
-                            heatmapData={heatmapData}
+                            heatmapPoints={heatmapPoints}
                             onSelectProject={setSelectedProject}
                         />
                     </div>
@@ -400,76 +411,53 @@ export default function LocalProjectsPage() {
 }
 
 // Separate Map Component to isolate lifecycle and fix hydration/reference errors
-function LocalProjectMap({ projects, heatmapData, onSelectProject }: any) {
+function LocalProjectMap({ projects, heatmapPoints, onSelectProject }: any) {
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+        libraries: LIBRARIES
+    });
+
+    if (!isLoaded) return <div className="w-full h-full bg-slate-900/50 animate-pulse flex items-center justify-center text-slate-500 font-medium border border-slate-800 rounded-3xl">Initializing Map Intelligence...</div>;
+
+    const heatmapData = heatmapPoints ? heatmapPoints.map((p: any) => new google.maps.LatLng(p.lat, p.lng)) : [];
+
     return (
-        <Map
-            initialViewState={{
-                longitude: 77.2090, // Delhi center
-                latitude: 28.6139,
-                zoom: 10
-            }}
-            style={{ width: "100%", height: "100%", position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
-            mapStyle={OLA_MAPS_STYLE_URL}
-            mapLib={maplibregl as any}
-            transformRequest={(url) => {
-                if (url.includes("api.olamaps.io")) {
-                    // Prevent duplicate api_key appending
-                    if (url.includes("api_key=")) {
-                        return { url };
-                    }
-                    return {
-                        url: url.includes("?") ? `${url}&api_key=${OLA_MAPS_API_KEY}` : `${url}?api_key=${OLA_MAPS_API_KEY}`
-                    };
-                }
-                return { url };
+        <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "100%", position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
+            center={{ lat: 28.6139, lng: 77.2090 }} // Delhi center
+            zoom={11}
+            options={{
+                styles: DARK_MAP_STYLE,
+                disableDefaultUI: true,
+                zoomControl: true,
+                gestureHandling: "greedy",
             }}
         >
-            <NavigationControl position="bottom-right" />
-
-            <Source type="geojson" data={heatmapData as any}>
-                <Layer
-                    id="project-heatmap"
-                    type="heatmap"
-                    paint={{
-                        'heatmap-weight': 1,
-                        'heatmap-intensity': 1,
-                        'heatmap-color': [
-                            'interpolate',
-                            ['linear'],
-                            ['heatmap-density'],
-                            0, 'rgba(99, 102, 241, 0)',
-                            0.2, 'rgba(99, 102, 241, 0.2)',
-                            0.4, 'rgba(129, 140, 248, 0.4)',
-                            0.6, 'rgba(165, 180, 252, 0.6)',
-                            0.8, 'rgba(199, 210, 254, 0.8)',
-                            1, 'rgba(255, 255, 255, 0.9)'
-                        ],
-                        'heatmap-radius': 35,
-                        'heatmap-opacity': 0.6
-                    }}
-                />
-            </Source>
+            <HeatmapLayerF
+                data={heatmapData}
+                options={{
+                    radius: 30,
+                    opacity: 0.6,
+                }}
+            />
 
             {projects.map((p: any) => (
-                <Marker
+                <MarkerF
                     key={p.id}
-                    longitude={p.coordinates.lng}
-                    latitude={p.coordinates.lat}
-                    onClick={(e: any) => {
-                        e.originalEvent.stopPropagation();
-                        onSelectProject(p);
+                    position={{ lat: p.coordinates.lat, lng: p.coordinates.lng }}
+                    onClick={() => onSelectProject(p)}
+                    icon={{
+                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z", // Simple pin
+                        fillColor: "#6366f1",
+                        fillOpacity: 1,
+                        strokeWeight: 1,
+                        strokeColor: "#ffffff",
+                        scale: 1.5,
+                        anchor: new google.maps.Point(12, 22),
                     }}
-                >
-                    <div className="relative group cursor-pointer flex flex-col items-center">
-                        <div className="absolute -top-8 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-slate-800 z-50">
-                            {p.title}
-                        </div>
-                        <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-transform hover:scale-125">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                        </div>
-                    </div>
-                </Marker>
+                />
             ))}
-        </Map>
+        </GoogleMap>
     );
 }
