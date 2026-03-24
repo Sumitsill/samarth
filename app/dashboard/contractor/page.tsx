@@ -108,7 +108,7 @@ export default function CorporateBoothAnalyticsDashboard() {
                 </div>
 
                 {/* Feature 1: Top Stats (Overview) */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div id="dashboard-stats" className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[
                         { label: "Village/Booth Reach", value: "88%", desc: "Targeted connect", icon: Users, color: "text-emerald-500", progress: 88 },
                         { label: "Infrastructure Audit", value: "14 / 20", desc: "Verified projects", icon: ShieldCheck, color: "text-indigo-500", progress: 70 },
@@ -155,7 +155,7 @@ export default function CorporateBoothAnalyticsDashboard() {
                     </motion.div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div id="dashboard-charts" className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     {/* Feature 2: Intelligent Segmentation (Radar Chart) */}
                     <motion.div variants={itemVariants}>
                         <Card className="bg-slate-900/40 backdrop-blur-3xl border-white/[0.05] rounded-[32px] overflow-hidden group hover:border-white/10 transition-colors">

@@ -24,7 +24,8 @@ export const authService = {
                 data: {
                     role: role,
                     name: name
-                }
+                },
+                emailRedirectTo: `${window.location.origin}/verify-success`
             }
         });
 
@@ -78,9 +79,20 @@ export const authService = {
     },
 
     subscribeToAuthChanges(callback: (user: User | null) => void) {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                const u = session.user;
+        const fetchAndEmitUser = async (u: any) => {
+            if (!u) {
+                callback(null);
+                return;
+            }
+            
+            // Fetch full user data from our 'users' table
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', u.id)
+                .single();
+
+            if (userError || !userData) {
                 callback({
                     id: u.id,
                     name: u.user_metadata?.name || u.email?.split('@')[0] || "User",
@@ -88,22 +100,16 @@ export const authService = {
                     role: (u.user_metadata?.role as UserRole) || "civilian"
                 });
             } else {
-                callback(null);
+                callback(userData as User);
             }
+        };
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            fetchAndEmitUser(session?.user);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                const u = session.user;
-                callback({
-                    id: u.id,
-                    name: u.user_metadata?.name || u.email?.split('@')[0] || "User",
-                    phone: u.user_metadata?.phone || "",
-                    role: (u.user_metadata?.role as UserRole) || "civilian"
-                });
-            } else {
-                callback(null);
-            }
+            fetchAndEmitUser(session?.user);
         });
 
         return () => {

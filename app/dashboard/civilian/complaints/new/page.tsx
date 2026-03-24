@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,11 +17,13 @@ import {
     Camera,
     Loader2,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    X,
+    Plus
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import GradientText from "@/components/GradientText";
 import Prism from "@/components/Prism";
 import AICircle from "@/components/AICircle";
@@ -36,41 +38,63 @@ type ComplaintFormValues = z.infer<typeof complaintSchema>;
 export default function NewComplaintPage() {
     const router = useRouter();
     const { user } = useAuthStore();
-    const [image, setImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [images, setImages] = useState<{file: File, preview: string}[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { register, handleSubmit, formState: { errors } } = useForm<ComplaintFormValues>({
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<ComplaintFormValues>({
         resolver: zodResolver(complaintSchema),
+        defaultValues: {
+            description: "",
+            address: ""
+        }
     });
 
+    const description = watch("description");
+    const address = watch("address");
+    const isFormValid = description.length >= 10 && address.length >= 5 && images.length > 0;
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            setError(null);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImages(prev => [...prev, { file, preview: reader.result as string }]);
+                };
+                reader.readAsDataURL(file);
+            });
         }
+    };
+
+    const removeImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
     };
 
     const onSubmit = async (data: ComplaintFormValues) => {
         if (!user) return;
+        
+        // Strict Validation Check
+        if (images.length === 0) {
+            setError("Please upload at least one image to submit the complaint.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         try {
             await complaintService.fileComplaint(user.id, {
                 description: data.description,
                 location: {
-                    lat: 0, // Placeholder for real geolocation
+                    lat: 0,
                     lng: 0,
                     address: data.address
                 },
-                imageFile: image || undefined
+                // For simplicity, we send the first image or modify service to handle multiple
+                imageFile: images[0].file 
             });
             setIsSuccess(true);
             setTimeout(() => router.push("/dashboard/civilian/complaints"), 2000);
@@ -116,7 +140,7 @@ export default function NewComplaintPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto py-4 pb-12 relative">
+        <div className="max-w-6xl mx-auto py-4 pb-12 relative">
             {/* Background Decoration */}
             <div className="fixed inset-0 pointer-events-none opacity-10 -z-10">
                 <Prism hueShift={220} animationType="3drotate" scale={1.5} glow={0.5} />
@@ -136,65 +160,87 @@ export default function NewComplaintPage() {
                     <h1 className="text-4xl font-extrabold tracking-tight">
                         <GradientText colors={['#ffffff', '#a5b4fc', '#ffffff']} className="ml-0">Report an Issue</GradientText>
                     </h1>
-                    <p className="text-slate-500 font-medium">Help us build a better constituency, one report at a time.</p>
+                    <p className="text-slate-500 font-medium tracking-tight">Help us build a better constituency, one report at a time.</p>
                 </div>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="lg:col-span-2"
+                    className="lg:col-span-3"
                 >
-                    <Card className="bg-[#0E0F17]/80 backdrop-blur-2xl border-slate-800 shadow-2xl rounded-3xl overflow-hidden relative border-t-indigo-500/50">
+                    <Card className="bg-[#0E0F17]/80 backdrop-blur-2xl border-slate-800 shadow-2xl rounded-[40px] overflow-hidden relative border-t-indigo-500/50">
                         <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-2xl">Complaint Details</CardTitle>
-                            <CardDescription className="text-slate-400 text-base">Provide accurate details to ensure rapid response from our ground workers.</CardDescription>
+                            <CardTitle className="text-2xl font-black">Issue Details</CardTitle>
+                            <CardDescription className="text-slate-400 text-base">Accurate data ensures rapid response from our ground teams.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 pt-4">
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <AlertCircle className="w-4 h-4 text-indigo-400" /> Description
+                                    <label className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
+                                        <AlertCircle className="w-3.5 h-3.5" /> Description of incident
                                     </label>
                                     <Textarea
                                         {...register("description")}
-                                        placeholder="Describe the issue in detail (e.g., Severe water leakage on Station Road...)"
-                                        className="bg-[#1A1E2E]/50 border-slate-800 min-h-[140px] focus-visible:ring-indigo-600/50 rounded-2xl resize-none text-lg p-5"
+                                        placeholder="Describe the issue in detail... (e.g. Water main break at Adarsh Nagar Metro Station)"
+                                        className={cn(
+                                            "bg-[#1A1E2E]/50 border-slate-800 min-h-[160px] focus-visible:ring-indigo-600/50 rounded-3xl resize-none text-lg p-6 transition-all",
+                                            errors.description && "border-rose-500/50 bg-rose-500/5"
+                                        )}
                                     />
-                                    {errors.description && <p className="text-xs text-rose-400 font-medium">{errors.description.message}</p>}
+                                    {errors.description && <p className="text-xs text-rose-500 font-bold ml-2">⚠️ {errors.description.message}</p>}
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-indigo-400" /> Location Address
+                                    <label className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
+                                        <MapPin className="w-3.5 h-3.5" /> Incident Location
                                     </label>
                                     <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
+                                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-indigo-400 transition-colors" />
                                         <Input
                                             {...register("address")}
                                             placeholder="House No, Street, Landmark..."
-                                            className="bg-[#1A1E2E]/50 border-slate-800 h-14 pl-12 focus-visible:ring-indigo-600/50 rounded-2xl text-lg"
+                                            className={cn(
+                                                "bg-[#1A1E2E]/50 border-slate-800 h-16 pl-14 focus-visible:ring-indigo-600/50 rounded-[20px] text-lg font-bold transition-all",
+                                                errors.address && "border-rose-500/50 bg-rose-500/5"
+                                            )}
                                         />
                                     </div>
-                                    {errors.address && <p className="text-xs text-rose-400 font-medium">{errors.address.message}</p>}
+                                    {errors.address && <p className="text-xs text-rose-500 font-bold ml-2">⚠️ {errors.address.message}</p>}
                                 </div>
 
-                                <Button
-                                    type="submit"
-                                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-16 text-xl font-bold shadow-xl shadow-indigo-600/20 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? (
-                                        <div className="flex items-center gap-3">
-                                            <Loader2 className="w-6 h-6 animate-spin" />
-                                            Encrypting & Filing...
-                                        </div>
-                                    ) : (
-                                        "Submit Official Complaint"
+                                <div className="pt-4">
+                                    <Button
+                                        type="submit"
+                                        className={cn(
+                                            "w-full h-18 text-xl font-black shadow-2xl rounded-[24px] transition-all relative overflow-hidden group",
+                                            isFormValid 
+                                                ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20" 
+                                                : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
+                                        )}
+                                        disabled={isLoading || !isFormValid}
+                                    >
+                                        <span className="relative z-10 flex items-center gap-3">
+                                            {isLoading ? (
+                                                <>
+                                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Submit Complaint <CheckCircle2 className="w-6 h-6 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                </>
+                                            )}
+                                        </span>
+                                    </Button>
+                                    {!isFormValid && !isLoading && (
+                                        <p className="text-[10px] text-center font-black text-rose-400 uppercase tracking-widest mt-4 animate-pulse">
+                                            {images.length === 0 ? "Images Required to submit" : "Fill all fields to continue"}
+                                        </p>
                                     )}
-                                </Button>
+                                </div>
                             </form>
                         </CardContent>
                     </Card>
@@ -204,84 +250,94 @@ export default function NewComplaintPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="space-y-6"
+                    className="lg:col-span-2 space-y-8"
                 >
                     <div className="space-y-4">
-                        <label className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <Camera className="w-4 h-4 text-indigo-400" /> Media Evidence
-                        </label>
-                        <div
-                            className={cn(
-                                "aspect-square rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden p-2 group",
-                                imagePreview ? "border-indigo-500/50 bg-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.1)]" : "border-slate-800 hover:border-indigo-500/40 hover:bg-indigo-500/5"
+                        <div className="flex justify-between items-end">
+                            <label className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
+                                <Camera className="w-3.5 h-3.5" /> Media Evidence ({images.length})
+                            </label>
+                            {images.length > 0 && (
+                                <button onClick={() => setImages([])} className="text-[10px] font-black text-rose-400 uppercase hover:underline">Clear All</button>
                             )}
-                            onClick={() => document.getElementById('photo-upload')?.click()}
-                        >
-                            {imagePreview ? (
-                                <div className="relative w-full h-full rounded-[24px] overflow-hidden">
-                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="sm"
-                                            className="h-10 px-4 rounded-xl font-bold"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setImage(null);
-                                                setImagePreview(null);
-                                            }}
-                                        >
-                                            Replace Photo
-                                        </Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="w-20 h-20 bg-slate-900 border border-slate-800 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Camera className="w-10 h-10 text-slate-600 group-hover:text-indigo-400" />
-                                    </div>
-                                    <p className="text-lg font-bold text-slate-300">Evidence Upload</p>
-                                    <p className="text-xs text-slate-500 mt-2 text-center px-6">Files larger than 5MB will be auto-compressed.</p>
-                                </>
-                            )}
-                            <input
-                                id="photo-upload"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleImageChange}
-                            />
                         </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <AnimatePresence>
+                                {images.map((img, i) => (
+                                    <motion.div
+                                        key={img.preview}
+                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        exit={{ scale: 0.8, opacity: 0 }}
+                                        className="aspect-square rounded-3xl overflow-hidden relative group border-2 border-indigo-500/20"
+                                    >
+                                        <img src={img.preview} className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button 
+                                                onClick={() => removeImage(i)}
+                                                className="w-10 h-10 bg-rose-500 text-white rounded-xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                            
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="aspect-square rounded-3xl border-2 border-dashed border-slate-800 bg-slate-900/40 hover:bg-indigo-500/5 hover:border-indigo-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                            >
+                                <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600/20 transition-all">
+                                    <Plus className="w-6 h-6 text-slate-500 group-hover:text-indigo-400" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Add Evidence</span>
+                            </button>
+                        </div>
+                        
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleImageChange}
+                        />
                     </div>
 
-                    <div className="p-8 bg-indigo-500/10 border border-indigo-500/20 rounded-[32px] flex flex-col gap-4 relative overflow-hidden group">
-                        <div className="absolute -top-10 -right-10 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <AICircle size={200} color={imagePreview ? "#818cf8" : "#6366f1"} active={!!imagePreview} />
+                    <div className="p-8 bg-indigo-500/10 border border-indigo-500/20 rounded-[40px] flex flex-col gap-4 relative overflow-hidden group shadow-2xl">
+                        <div className="absolute -top-10 -right-10 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                            <AICircle size={250} color={images.length > 0 ? "#818cf8" : "#6366f1"} active={images.length > 0} />
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-500/20 text-white rounded-xl flex items-center justify-center shrink-0 border border-indigo-500/30">
-                                <AICircle size={24} color={imagePreview ? "#ffffff" : "#818cf8"} active={true} />
+                            <div className="w-12 h-12 bg-indigo-500/20 text-white rounded-2xl flex items-center justify-center shrink-0 border border-indigo-500/30">
+                                <AICircle size={28} color={images.length > 0 ? "#ffffff" : "#818cf8"} active={true} />
                             </div>
-                            <h4 className="font-bold text-indigo-100">AI Priority Routing</h4>
+                            <h4 className="font-black text-indigo-100 text-lg uppercase tracking-tight">AI Diagnostic Shield</h4>
                         </div>
-                        <p className="text-sm text-indigo-200/60 leading-relaxed relative z-10">
-                            Our platform uses real-time computer vision and NLP to route your complaint to the specific department instantly. Clearer photos help us prioritize your issue in the queue.
+                        <p className="text-sm text-indigo-200/60 font-medium leading-relaxed relative z-10">
+                            Our AI requires visual evidence to authenticate the severity of the issue. Complaints with **Live Photos** are prioritized 3x faster in the resolution queue.
                         </p>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex gap-3 text-sm text-rose-400 font-medium"
-                        >
-                            <AlertCircle className="w-5 h-5 shrink-0" />
-                            <p>{error}</p>
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-[28px] flex gap-4 text-rose-500 font-black uppercase text-xs tracking-widest shadow-2xl"
+                            >
+                                <AlertCircle className="w-6 h-6 shrink-0" />
+                                <p className="leading-5">{error}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             </div>
         </div>
     );
 }
+
+

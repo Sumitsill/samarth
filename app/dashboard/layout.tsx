@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
 import GradientText from "@/components/GradientText";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { DashboardTutorial } from "@/components/DashboardTutorial";
+import { UserRole } from "@/types";
 
 export default function DashboardLayout({
     children,
@@ -76,6 +78,7 @@ export default function DashboardLayout({
             { name: "Analytics", href: "/dashboard/worker/analytics", icon: BarChart3 },
         ] : []),
         { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+        { name: "Settings", href: "/dashboard/settings", icon: Settings },
     ];
 
     const handleLogout = async () => {
@@ -84,99 +87,104 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen text-slate-50 flex bg-transparent relative">
-            {/* Mobile Sidebar Overlay */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] md:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
+        <>
+            <div className="min-h-screen text-slate-50 flex bg-transparent relative">
+                {/* Mobile Sidebar Overlay */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] md:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
 
-            {/* Sidebar */}
-            <aside className={cn(
-                "bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col z-50 fixed md:relative h-full",
-                isSidebarOpen ? "w-64 translate-x-0" : "w-0 md:w-20 -translate-x-full md:translate-x-0 overflow-hidden"
-            )}>
-                <div className="p-4 sm:p-6 flex items-center gap-3 shrink-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    {isSidebarOpen && (
-                        <span className="text-xl font-bold tracking-tight">
-                            <GradientText colors={['#ffffff', '#a5b4fc', '#ffffff']}>SAMARTH</GradientText>
-                        </span>
-                    )}
-                </div>
-
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-                    {navItems.map((item) => (
-                        <Link key={item.name} href={item.href}>
-                            <div className={cn(
-                                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all group",
-                                pathname === item.href
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
-                            )}>
-                                <item.icon className="w-5 h-5 shrink-0" />
-                                {isSidebarOpen && <span className="font-medium">{item.name}</span>}
-                            </div>
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-slate-800 space-y-2">
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800 gap-3 px-3 py-6"
-                        onClick={handleLogout}
-                    >
-                        <LogOut className="w-5 h-5 shrink-0" />
-                        {isSidebarOpen && <span>Logout</span>}
-                    </Button>
-
-                    <div className="flex items-center gap-3 p-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full shrink-0"></div>
+                {/* Sidebar */}
+                <aside id="sidebar-tutorial" className={cn(
+                    "bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col z-50 fixed md:relative h-full",
+                    isSidebarOpen ? "w-64 translate-x-0" : "w-0 md:w-20 -translate-x-full md:translate-x-0 overflow-hidden"
+                )}>
+                    <div className="p-4 sm:p-6 flex items-center gap-3 shrink-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        </div>
                         {isSidebarOpen && (
-                            <div className="overflow-hidden">
-                                <p className="text-sm font-medium truncate">{user.name}</p>
-                                <p className="text-xs text-slate-500 truncate capitalize">{role}</p>
-                            </div>
+                            <span className="text-xl font-bold tracking-tight">
+                                <GradientText colors={['#ffffff', '#a5b4fc', '#ffffff']}>SAMARTH</GradientText>
+                            </span>
                         )}
                     </div>
-                </div>
-            </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
-                <header className="h-16 sm:h-20 border-b border-slate-800 flex items-center justify-between px-4 sm:px-8 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 gap-2">
-                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
-                            <Menu className="w-5 h-5" />
+                    <nav className="flex-1 px-4 space-y-2 mt-4">
+                        {navItems.map((item) => (
+                            <Link key={item.name} href={item.href} id={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                                <div className={cn(
+                                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all group",
+                                    pathname === item.href
+                                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                                        : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                )}>
+                                    <item.icon className="w-5 h-5 shrink-0" />
+                                    {isSidebarOpen && <span className="font-medium">{item.name}</span>}
+                                </div>
+                            </Link>
+                        ))}
+                    </nav>
+
+                    <div className="p-4 border-t border-slate-800 space-y-2">
+                        <Button
+                            variant="ghost"
+                            className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800 gap-3 px-3 py-6"
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="w-5 h-5 shrink-0" />
+                            {isSidebarOpen && <span>Logout</span>}
                         </Button>
-                        <h2 className="text-lg sm:text-xl font-semibold capitalize truncate">
-                            <GradientText colors={['#ffffff', '#cbd5e1', '#ffffff']}>
-                                {pathname.split('/').pop()?.replace(/-/g, ' ')}
-                            </GradientText>
-                        </h2>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                        <LanguageSelector />
-                        <Button variant="outline" size="sm" className="hidden xs:flex bg-slate-800 border-slate-700 text-slate-300 h-8 sm:h-9">
-                            Support
-                        </Button>
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
-                            <Settings className="w-4 h-4 text-slate-400" />
+
+                        <div className="flex items-center gap-3 p-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full shrink-0"></div>
+                            {isSidebarOpen && (
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-medium truncate">{user.name}</p>
+                                    <p className="text-xs text-slate-500 truncate capitalize">{role}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
-                </header>
+                </aside>
 
-                <div className="flex-1 overflow-y-auto p-8 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent">
-                    <div className="max-w-7xl mx-auto">
-                        {children}
+                {/* Main Content */}
+                <main className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
+                    <header className="h-16 sm:h-20 border-b border-slate-800 flex items-center justify-between px-4 sm:px-8 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
+                                <Menu className="w-5 h-5" />
+                            </Button>
+                            <h2 className="text-lg sm:text-xl font-semibold capitalize truncate">
+                                <GradientText colors={['#ffffff', '#cbd5e1', '#ffffff']}>
+                                    {pathname.split('/').pop()?.replace(/-/g, ' ')}
+                                </GradientText>
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                            <LanguageSelector />
+                            <Button variant="outline" size="sm" className="hidden xs:flex bg-slate-800 border-slate-700 text-slate-300 h-8 sm:h-9">
+                                Support
+                            </Button>
+                            <Link href="/dashboard/settings">
+                                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0 hover:border-indigo-500 transition-all cursor-pointer">
+                                    <Settings className="w-4 h-4 text-slate-400" />
+                                </div>
+                            </Link>
+                        </div>
+                    </header>
+
+                    <div className="flex-1 overflow-y-auto p-8 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent">
+                        <div className="max-w-7xl mx-auto">
+                            {children}
+                        </div>
                     </div>
-                </div>
-            </main>
-        </div>
+                </main>
+            </div>
+            <DashboardTutorial role={role as UserRole} />
+        </>
     );
 }

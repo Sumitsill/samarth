@@ -154,7 +154,7 @@ export default function CivilianDashboard() {
             </div>
 
             {/* Dynamic Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div id="dashboard-stats" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="bg-slate-900 border-slate-800 shadow-xl shadow-indigo-500/5">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-slate-400">Total Complaints</CardTitle>
@@ -204,7 +204,7 @@ export default function CivilianDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Dynamic Chart */}
-                <Card className="lg:col-span-2 bg-slate-900 border-slate-800">
+                <Card id="dashboard-charts" className="lg:col-span-2 bg-slate-900 border-slate-800">
                     <CardHeader>
                         <CardTitle><GradientText colors={['#818cf8', '#c084fc']} className="ml-0">Complaint Trends</GradientText></CardTitle>
                         <CardDescription>Monthly volume of complaints reported in your area directly from database.</CardDescription>
@@ -235,7 +235,7 @@ export default function CivilianDashboard() {
 
                 {/* Quick Actions & Dynamic Recent Progress */}
                 <div className="space-y-6">
-                    <Card className="bg-indigo-600 border-none text-white overflow-hidden relative shadow-lg shadow-indigo-500/20">
+                    <Card id="file-complaint-btn" className="bg-indigo-600 border-none text-white overflow-hidden relative shadow-lg shadow-indigo-500/20">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Plus className="w-24 h-24" />
                         </div>

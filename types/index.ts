@@ -6,6 +6,12 @@ export interface User {
     phone: string;
     role: UserRole;
     boothId?: string;
+    profile_pic?: string;
+    settings?: {
+        notifications?: any;
+        privacy?: any;
+        roleData?: any;
+    };
 }
 
 export interface Complaint {

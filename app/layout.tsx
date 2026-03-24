@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/AuthProvider";
+import { AuthRedirectHandler } from "@/components/AuthRedirectHandler";
 import FloatingLines from "@/components/FloatingLines";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -57,6 +58,7 @@ export default function RootLayout({
           <FloatingLines />
         </div>
         <AuthProvider>
+          <AuthRedirectHandler />
           {children}
         </AuthProvider>
       </body>

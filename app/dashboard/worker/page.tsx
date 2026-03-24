@@ -254,7 +254,7 @@ export default function WorkerMarketplaceDashboard() {
                         <p className="text-slate-400 text-lg font-medium max-w-xl">Unified control center for Delhi Government portal connectivity, infrastructure bidding, and execution tracking.</p>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-1.5 rounded-3xl flex gap-1 shadow-2xl">
+                    <div id="dashboard-stats" className="bg-white/5 backdrop-blur-2xl border border-white/10 p-1.5 rounded-3xl flex gap-1 shadow-2xl">
                         {[
                             { id: "tenders", label: "Opportunities", icon: FileText },
                             { id: "approvals", label: "Quotations", icon: Building2 },
@@ -308,7 +308,7 @@ export default function WorkerMarketplaceDashboard() {
                         >
                             {/* Tab Content: Tenders */}
                             {activeTab === "tenders" && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                <div id="dashboard-charts" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                                     {tenders.map((tender, i) => (
                                         <motion.div
                                             initial={{ opacity: 0, y: 30 }}
