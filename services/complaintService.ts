@@ -6,8 +6,12 @@ export const complaintService = {
     async fileComplaint(userId: string, data: {
         description: string;
         location: { lat: number; lng: number; address: string };
-        imageFile?: File;
+        imageFile: File;
     }): Promise<string> {
+
+        if (!data.imageFile) {
+            throw new Error("Complaint cannot be filed without an image evidence.");
+        }
 
         // 1. AI Classification
         const category = await aiService.classifyComplaint(data.description);
@@ -19,7 +23,7 @@ export const complaintService = {
             location: data.location,
             category: category,
             status: 'pending',
-            image_url: data.imageFile ? "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop" : "",
+            image_url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop", // In production, replace with actual upload logic
             created_at: new Date().toISOString()
         };
 

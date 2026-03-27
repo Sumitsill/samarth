@@ -15,6 +15,7 @@ import {
     Menu,
     X,
     ShieldCheck,
+    ShieldAlert,
     Package,
     Users,
     Briefcase,
@@ -26,6 +27,7 @@ import GradientText from "@/components/GradientText";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { DashboardTutorial } from "@/components/DashboardTutorial";
 import { UserRole } from "@/types";
+import ProfileCompletionModal from "@/components/ProfileCompletionModal";
 
 export default function DashboardLayout({
     children,
@@ -61,6 +63,10 @@ export default function DashboardLayout({
         );
     }
 
+    if (!user.isProfileComplete) {
+        return <ProfileCompletionModal />;
+    }
+
     const navItems = [
         { name: "Dashboard", href: `/dashboard/${role}`, icon: LayoutDashboard },
         ...(role === "civilian" ? [
@@ -72,10 +78,8 @@ export default function DashboardLayout({
             { name: "Analytics", href: "/dashboard/contractor", icon: BarChart3 },
             { name: "Workers", href: "/dashboard/contractor/workers", icon: Users },
         ] : []),
-        ...(role === "worker" ? [
-            { name: "Tender Approvals", href: "/dashboard/worker", icon: FileText },
-            { name: "Progress Tracking", href: "/dashboard/worker/progress", icon: Users },
-            { name: "Analytics", href: "/dashboard/worker/analytics", icon: BarChart3 },
+        ...(role === "party_worker" ? [
+            { name: "My Tasks", href: "/dashboard/party_worker", icon: Briefcase },
         ] : []),
         { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -98,6 +102,7 @@ export default function DashboardLayout({
                 )}
 
                 {/* Sidebar */}
+                {role !== "party_worker" && (
                 <aside id="sidebar-tutorial" className={cn(
                     "bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col z-50 fixed md:relative h-full",
                     isSidebarOpen ? "w-64 translate-x-0" : "w-0 md:w-20 -translate-x-full md:translate-x-0 overflow-hidden"
@@ -150,9 +155,11 @@ export default function DashboardLayout({
                         </div>
                     </div>
                 </aside>
+                )}
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
+                    {role !== "party_worker" && (
                     <header className="h-16 sm:h-20 border-b border-slate-800 flex items-center justify-between px-4 sm:px-8 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 gap-2">
                         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                             <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
@@ -176,15 +183,22 @@ export default function DashboardLayout({
                             </Link>
                         </div>
                     </header>
+                    )}
 
-                    <div className="flex-1 overflow-y-auto p-8 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent">
-                        <div className="max-w-7xl mx-auto">
+                    <div className={cn(
+                        "flex-1 overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent",
+                        role === "party_worker" ? "p-4 md:p-10" : "p-8"
+                    )}>
+                        <div className={cn(
+                            "h-full",
+                            role === "party_worker" ? "w-full" : "max-w-7xl mx-auto"
+                        )}>
                             {children}
                         </div>
                     </div>
                 </main>
             </div>
-            <DashboardTutorial role={role as UserRole} />
+            {user.isProfileComplete && role !== "party_worker" && <DashboardTutorial role={role as UserRole} />}
         </>
     );
 }

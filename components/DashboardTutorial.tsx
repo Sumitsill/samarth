@@ -57,13 +57,13 @@ const STEPS: Step[] = [
         position: "right",
         roleLimit: ["civilian"]
     },
-    {
+    /* {
         targetId: "nav-tender-approvals",
         title: { en: "Tender Approvals", hi: "निविदा अनुमोदन" },
         content: { en: "Review and approve pending tenders directly from this section.", hi: "इस अनुभाग से सीधे लंबित निविदाओं की समीक्षा और अनुमोदन करें।" },
         position: "right",
         roleLimit: ["worker"]
-    },
+    }, */
     {
         targetId: "nav-workers",
         title: { en: "Worker Management", hi: "श्रमिक प्रबंधन" },

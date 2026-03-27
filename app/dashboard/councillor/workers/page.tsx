@@ -41,13 +41,30 @@ export default function WorkersPage() {
     const [filter, setFilter] = useState("Delhi");
 
     const [isOnboarding, setIsOnboarding] = useState(false);
-    const [newWorkerData, setNewWorkerData] = useState({ name: '', phone: '', area: 'Connaught Place, Delhi' });
+    const [newWorkerData, setNewWorkerData] = useState({ name: '', phone: '', area: 'Connaught Place, Delhi', joiningCode: '' });
+
+    // Generate unique 8-digit code
+    const generateUniqueCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    };
+
+    // Update code when opening dialog
+    useEffect(() => {
+        if (isOnboarding) {
+            setNewWorkerData(prev => ({ ...prev, joiningCode: generateUniqueCode() }));
+        }
+    }, [isOnboarding]);
 
     const fallbackWorkers = [
-        { id: '1', name: 'Amit Kumar', status: 'Active', tasks: 4, area: 'Booth 12A, New Delhi', recentActivity: 'Resolved water issue logging', phone: '+91 9876543210' },
-        { id: '2', name: 'Suresh Singh', status: 'On Break', tasks: 2, area: 'Booth 14, Old Delhi', recentActivity: 'Filed road inspection report', phone: '+91 9876543211' },
-        { id: '3', name: 'Priya Verma', status: 'Active', tasks: 7, area: 'Station Road, Delhi Zone', recentActivity: 'Distributed scheme forms', phone: '+91 9876543212' },
-        { id: '4', name: 'Rahul Dev', status: 'Offline', tasks: 0, area: 'Booth 12A, Connaught Place', recentActivity: 'Shift ended', phone: '+91 9876543213' },
+        { id: '1', name: 'Amit Kumar', status: 'Active', tasks: 4, area: 'Booth 12A, New Delhi', recentActivity: 'Resolved water issue logging', phone: '+91 9876543210', joiningCode: 'WK-X772B' },
+        { id: '2', name: 'Suresh Singh', status: 'On Break', tasks: 2, area: 'Booth 14, Old Delhi', recentActivity: 'Filed road inspection report', phone: '+91 9876543211', joiningCode: 'WK-P991A' },
+        { id: '3', name: 'Priya Verma', status: 'Active', tasks: 7, area: 'Station Road, Delhi Zone', recentActivity: 'Distributed scheme forms', phone: '+91 9876543212', joiningCode: 'WK-L442Z' },
+        { id: '4', name: 'Rahul Dev', status: 'Offline', tasks: 0, area: 'Booth 12A, Connaught Place', recentActivity: 'Shift ended', phone: '+91 9876543213', joiningCode: 'WK-G661K' },
     ];
 
     useEffect(() => {
@@ -70,7 +87,8 @@ export default function WorkersPage() {
                         tasks: Math.floor(Math.random() * 8),
                         area: i % 2 === 0 ? 'Connaught Place, Delhi' : 'Saket, South Delhi', // dynamically near Delhi
                         recentActivity: 'Automated Sync Node',
-                        phone: d.phone || 'N/A'
+                        phone: d.phone || 'N/A',
+                        joiningCode: d.joining_code || generateUniqueCode()
                     }));
                     // Add mock workers for richer UI if less than 3
                     setWorkers([...mappedWorkers, ...fallbackWorkers.map(w => ({ ...w, id: `mock-${w.id}` }))]);
@@ -112,10 +130,11 @@ export default function WorkersPage() {
             tasks: 0,
             area: newWorkerData.area,
             recentActivity: 'Just Onboarded',
-            phone: newWorkerData.phone
+            phone: newWorkerData.phone,
+            joiningCode: newWorkerData.joiningCode
         };
         setWorkers([worker, ...workers]);
-        setNewWorkerData({ name: '', phone: '', area: 'Connaught Place, Delhi' });
+        setNewWorkerData({ name: '', phone: '', area: 'Connaught Place, Delhi', joiningCode: '' });
         setIsOnboarding(false);
     };
 
@@ -244,6 +263,7 @@ export default function WorkersPage() {
                                                     )}>
                                                         {worker.status}
                                                     </Badge>
+                                                    <Badge variant="outline" className="px-2 py-0 border-indigo-500/30 text-indigo-400 text-[8px] font-mono font-black">{worker.joiningCode}</Badge>
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-4 mt-2">
@@ -295,64 +315,76 @@ export default function WorkersPage() {
 
             {/* Onboard Worker Dialog */}
             <Dialog open={isOnboarding} onOpenChange={setIsOnboarding}>
-                <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-800 text-slate-100 p-8 rounded-[32px]">
-                    <DialogHeader>
-                        <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4">
-                            <UserPlus className="w-6 h-6 text-indigo-400" />
-                        </div>
-                        <DialogTitle className="text-2xl font-black uppercase tracking-tight">Onboard Worker</DialogTitle>
-                        <DialogDescription className="text-slate-400">
-                            Equip a new worker to sync data locally and receive assignments.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-6 py-4 mt-2">
+                <DialogContent className="sm:max-w-[450px] bg-slate-900 border-slate-800 text-slate-100 p-0 rounded-[40px] overflow-hidden shadow-2xl border-white/10">
+                    <div className="p-8 pb-4">
+                        <DialogHeader>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20 shadow-inner">
+                                    <UserPlus className="w-7 h-7 text-indigo-400" />
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Assignment ID</span>
+                                    <div className="px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mt-1">
+                                        <span className="text-lg font-mono font-black text-indigo-400 tracking-widest">{newWorkerData.joiningCode}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <DialogTitle className="text-3xl font-black uppercase tracking-tighter text-white">Equip Operative</DialogTitle>
+                            <DialogDescription className="text-slate-400 font-medium">
+                                Provisioning a new identity and sync node for the <span className="text-indigo-400 font-bold">Worker Fleet</span>.
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+
+                    <div className="bg-white/[0.02] border-y border-white/[0.05] p-8 space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-widest">Full Name</Label>
+                            <Label htmlFor="name" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Identity: Full Name</Label>
                             <Input
                                 id="name"
                                 value={newWorkerData.name}
                                 onChange={(e) => setNewWorkerData({ ...newWorkerData, name: e.target.value })}
-                                className="bg-slate-950/50 border-slate-800 h-12 rounded-xl text-white placeholder:text-slate-600"
-                                placeholder="Vikram Sharma"
+                                className="bg-black/40 border-white/10 h-14 rounded-2xl text-white placeholder:text-slate-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all px-5 font-bold"
+                                placeholder="E.g. Vikram Sharma"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="phone" className="text-xs font-bold text-slate-400 uppercase tracking-widest">Phone Number</Label>
+                            <Label htmlFor="phone" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Comms: Phone Number</Label>
                             <Input
                                 id="phone"
                                 value={newWorkerData.phone}
                                 onChange={(e) => setNewWorkerData({ ...newWorkerData, phone: e.target.value })}
-                                className="bg-slate-950/50 border-slate-800 h-12 rounded-xl text-white placeholder:text-slate-600 font-mono"
-                                placeholder="+91 91234 56789"
+                                className="bg-black/40 border-white/10 h-14 rounded-2xl text-white placeholder:text-slate-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all px-5 font-mono font-bold"
+                                placeholder="+91 9XXXX XXXXX"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="area" className="text-xs font-bold text-slate-400 uppercase tracking-widest">Deployment Area</Label>
+                            <Label htmlFor="area" className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sector: Deployment Area</Label>
                             <Input
                                 id="area"
                                 value={newWorkerData.area}
                                 onChange={(e) => setNewWorkerData({ ...newWorkerData, area: e.target.value })}
-                                className="bg-slate-950/50 border-slate-800 h-12 rounded-xl text-white placeholder:text-slate-600"
+                                className="bg-black/40 border-white/10 h-14 rounded-2xl text-white placeholder:text-slate-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all px-5 font-bold"
                                 placeholder="E.g. South Extension, New Delhi"
                             />
                         </div>
                     </div>
-                    <DialogFooter className="mt-4">
-                        <Button
-                            variant="ghost"
-                            onClick={() => setIsOnboarding(false)}
-                            className="bg-transparent hover:bg-slate-800 text-slate-300 w-full sm:w-auto h-12 rounded-xl"
-                        >
-                            Cancel
-                        </Button>
+
+                    <div className="p-8 pt-6 flex flex-col gap-3">
                         <Button
                             onClick={handleOnboardWorker}
                             disabled={!newWorkerData.name || !newWorkerData.phone}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white w-full sm:w-auto h-12 rounded-xl font-bold px-8 shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-indigo-600/30 disabled:opacity-30 transition-all"
                         >
-                            Submit Application
+                            Authorize Deployment <Zap className="ml-2 w-4 h-4" />
                         </Button>
-                    </DialogFooter>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setIsOnboarding(false)}
+                            className="text-slate-500 hover:text-white hover:bg-white/5 h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest"
+                        >
+                            Abort Onboarding
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

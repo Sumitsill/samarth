@@ -3,9 +3,13 @@ import { User } from "@/types";
 
 export const userService = {
     async updateProfile(userId: string, data: Partial<User & { profile_pic?: string, settings?: any }>) {
+        const { name, ...rest } = data;
         const { error } = await supabase
-            .from('users')
-            .update(data)
+            .from('profiles')
+            .update({
+                ...rest,
+                full_name: name // Map name field to full_name column
+            })
             .eq('id', userId);
 
         if (error) {
@@ -16,7 +20,7 @@ export const userService = {
 
     async getUserSettings(userId: string) {
         const { data, error } = await supabase
-            .from('users')
+            .from('profiles')
             .select('settings')
             .eq('id', userId)
             .single();

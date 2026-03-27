@@ -1,4 +1,4 @@
-export type UserRole = 'civilian' | 'contractor' | 'worker';
+export type UserRole = 'civilian' | 'contractor' | 'worker' | 'party_worker' | 'councillor' | 'mayor';
 
 export interface User {
     id: string;
@@ -7,6 +7,16 @@ export interface User {
     role: UserRole;
     boothId?: string;
     profile_pic?: string;
+    age?: number;
+    gender?: 'male' | 'female' | 'other' | 'transgender';
+    caste?: string;
+    religion?: string;
+    fathers_name?: string;
+    mothers_name?: string;
+    occupation?: string;
+    area?: string;
+    constituency?: string;
+    isProfileComplete?: boolean;
     settings?: {
         notifications?: any;
         privacy?: any;

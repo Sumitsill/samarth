@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, Loader2, User, Landmark, Building2, Mail, Lock, Eye, EyeOff, Shield, ArrowRight, UserPlus } from "lucide-react";
+import { ShieldCheck, Loader2, User, Landmark, Building2, Mail, Lock, Eye, EyeOff, Shield, ArrowRight, UserPlus, Briefcase } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { UserRole } from "@/types";
@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import GradientText from "@/components/GradientText";
 import Link from "next/link";
 import { Home } from "lucide-react";
+import Prism from "@/components/Prism";
 
 const authSchema = z.object({
     name: z.string().optional(),
@@ -35,14 +36,41 @@ function LoginContent() {
     const [message, setMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    // Toggle between login and signup modes
     const [isSignUp, setIsSignUp] = useState(false);
+    const [partyJoiningCode, setPartyJoiningCode] = useState("");
 
     const setUser = useAuthStore((state) => state.setUser);
 
     const { register, handleSubmit, formState: { errors }, reset } = useForm<AuthFormValues>({
         resolver: zodResolver(authSchema),
     });
+
+    const handlePartyWorkerLogin = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+        if (!partyJoiningCode) {
+           setError("Party Joining Code is required.");
+           return;
+        }
+        setIsLoading(true);
+        setTimeout(() => {
+            const mockUser = {
+                id: "party-worker-1",
+                name: "Party Worker",
+                role: "party_worker" as UserRole,
+                phone: "+91 0000000000",
+                isProfileComplete: true,
+                joiningCode: partyJoiningCode,
+                constituencyNumber: "C-104",
+                constituencyName: "Lucknow Central",
+                workAlloted: "Gather 50 attendees for upcoming rally",
+                deadline: "7 Days"
+            };
+            setUser(mockUser as any);
+            router.push(`/dashboard/party_worker`);
+            setIsLoading(false);
+        }, 1000);
+    };
 
     const onSubmit = async (data: AuthFormValues) => {
         setIsLoading(true);
@@ -116,34 +144,25 @@ function LoginContent() {
                 <div className="w-full max-w-[440px]">
 
                     {/* Tabs */}
-                    <div className="grid grid-cols-3 bg-black/40 border border-white/5 backdrop-blur-md rounded-xl p-1 sm:p-1.5 mb-[2px]">
-                        <button
-                            type="button"
-                            onClick={() => setActiveRole("civilian")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
-                            ${activeRole === "civilian" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
-                        >
-                            <User className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "civilian" ? "text-white" : "text-slate-500"}`} />
-                            CITIZEN
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveRole("worker")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
-                            ${activeRole === "worker" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
-                        >
-                            <Landmark className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "worker" ? "text-white" : "text-slate-500"}`} />
-                            OFFICIAL
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveRole("contractor")}
-                            className={`flex flex-col items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-wider transition-all
-                            ${activeRole === "contractor" ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-400 hover:text-slate-300"}`}
-                        >
-                            <Building2 className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 ${activeRole === "contractor" ? "text-white" : "text-slate-500"}`} />
-                            CORPORATE
-                        </button>
+                    <div className="flex flex-wrap sm:grid sm:grid-cols-5 bg-black/40 border border-white/5 backdrop-blur-md rounded-xl p-1 gap-1 mb-[2px]">
+                        {[
+                            { id: "civilian", label: "CITIZEN", icon: User },
+                            { id: "party_worker", label: "WORKER", icon: Shield },
+                            { id: "councillor", label: "COUNCIL", icon: Building2 },
+                            { id: "mayor", label: "MAYOR", icon: Landmark },
+                            { id: "contractor", label: "VENDOR", icon: Briefcase }
+                        ].map((role) => (
+                            <button
+                                key={role.id}
+                                type="button"
+                                onClick={() => setActiveRole(role.id as UserRole)}
+                                className={`flex-1 min-w-[60px] flex flex-col items-center justify-center gap-1 py-2 sm:py-3 rounded-lg text-[9px] sm:text-[10px] font-bold tracking-wider transition-all
+                                ${activeRole === role.id ? "bg-[#3f21f1] text-white shadow-lg" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"}`}
+                            >
+                                <role.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeRole === role.id ? "text-white" : "text-slate-600"}`} />
+                                {role.label}
+                            </button>
+                        ))}
                     </div>
 
                     {/* Spacer */}
@@ -151,123 +170,197 @@ function LoginContent() {
 
                     {/* Form Card */}
                     <div className="bg-black/40 border border-white/5 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        {activeRole === "civilian" ? (
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-                            {isSignUp && (
+                                {isSignUp && (
+                                    <div className="space-y-2">
+                                        <label className="text-[13px] font-semibold text-[#E2E8F0]">Full Name</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                <UserPlus className="h-4 w-4 text-slate-500" />
+                                            </div>
+                                            <Input
+                                                {...register("name")}
+                                                placeholder="John Doe"
+                                                className="pl-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-[13px] font-medium rounded-lg"
+                                                autoComplete="name"
+                                            />
+                                        </div>
+                                        {errors.name && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.name.message}</p>}
+                                    </div>
+                                )}
+
                                 <div className="space-y-2">
-                                    <label className="text-[13px] font-semibold text-[#E2E8F0]">Full Name</label>
+                                    <label className="text-[13px] font-semibold text-[#E2E8F0]">Email Address</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                            <UserPlus className="h-4 w-4 text-slate-500" />
+                                            <Mail className="h-4 w-4 text-slate-500" />
                                         </div>
                                         <Input
-                                            {...register("name")}
-                                            placeholder="John Doe"
+                                            {...register("email")}
+                                            placeholder="name@domain.gov.in"
                                             className="pl-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-[13px] font-medium rounded-lg"
-                                            autoComplete="name"
+                                            autoComplete="email"
                                         />
                                     </div>
-                                    {errors.name && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.name.message}</p>}
+                                    {errors.email && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.email.message}</p>}
                                 </div>
-                            )}
 
-                            <div className="space-y-2">
-                                <label className="text-[13px] font-semibold text-[#E2E8F0]">Email Address</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Mail className="h-4 w-4 text-slate-500" />
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[13px] font-semibold text-[#E2E8F0]">Password</label>
+                                        {!isSignUp && (
+                                            <a href="#" className="text-[13px] text-[#4324f6] hover:text-indigo-400 font-semibold transition-colors">Forgot Password?</a>
+                                        )}
                                     </div>
-                                    <Input
-                                        {...register("email")}
-                                        placeholder="name@domain.gov.in"
-                                        className="pl-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-[13px] font-medium rounded-lg"
-                                        autoComplete="email"
-                                    />
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                            <Lock className="h-4 w-4 text-slate-500" />
+                                        </div>
+                                        <Input
+                                            {...register("password")}
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="••••••••"
+                                            className="pl-10 pr-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-sm tracking-widest rounded-lg"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                                        </button>
+                                    </div>
+                                    {errors.password && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.password.message}</p>}
                                 </div>
-                                {errors.email && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.email.message}</p>}
-                            </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[13px] font-semibold text-[#E2E8F0]">Password</label>
-                                    {!isSignUp && (
-                                        <a href="#" className="text-[13px] text-[#4324f6] hover:text-indigo-400 font-semibold transition-colors">Forgot Password?</a>
+                                {!isSignUp && (
+                                    <div className="flex items-center space-x-2.5 pt-1 pb-1">
+                                        <Checkbox id="keepSignedIn" className="w-[18px] h-[18px] border-slate-700/80 rounded data-[state=checked]:bg-[#3f21f1] data-[state=checked]:border-[#3f21f1] data-[state=checked]:text-white" />
+                                        <label
+                                            htmlFor="keepSignedIn"
+                                            className="text-[13px] font-medium leading-none text-slate-400 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                        >
+                                            Keep me signed in for 30 days
+                                        </label>
+                                    </div>
+                                )}
+
+                                {error && (
+                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-medium text-red-500 text-center">
+                                        {error}
+                                    </div>
+                                )}
+
+                                {message && (
+                                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-medium text-emerald-500 text-center">
+                                        {message}
+                                    </div>
+                                )}
+
+                                <Button type="submit" className="w-full bg-[#3f21f1] hover:bg-[#3217d8] text-white font-semibold h-[46px] text-[13px] rounded-lg transition-all" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            {isSignUp ? "Sign Up Now" : "Sign In to Portal"} <ArrowRight className="w-4 h-4" />
+                                        </span>
                                     )}
-                                </div>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Lock className="h-4 w-4 text-slate-500" />
-                                    </div>
-                                    <Input
-                                        {...register("password")}
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="••••••••"
-                                        className="pl-10 pr-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-sm tracking-widest rounded-lg"
-                                    />
+                                </Button>
+
+                                <div className="text-center pt-2">
+                                    <span className="text-[13px] text-slate-400 font-medium">
+                                        {isSignUp ? "Already have an account? " : "New to SAMARTH? "}
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                        onClick={() => {
+                                            setIsSignUp(!isSignUp);
+                                            setError(null);
+                                            setMessage(null);
+                                            reset();
+                                        }}
+                                        className="text-[13px] text-[#4324f6] hover:text-indigo-400 font-semibold transition-colors"
                                     >
-                                        {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                                        {isSignUp ? "Sign In instead" : "Create an account"}
                                     </button>
                                 </div>
-                                {errors.password && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.password.message}</p>}
-                            </div>
-
-                            {!isSignUp && (
-                                <div className="flex items-center space-x-2.5 pt-1 pb-1">
-                                    <Checkbox id="keepSignedIn" className="w-[18px] h-[18px] border-slate-700/80 rounded data-[state=checked]:bg-[#3f21f1] data-[state=checked]:border-[#3f21f1] data-[state=checked]:text-white" />
-                                    <label
-                                        htmlFor="keepSignedIn"
-                                        className="text-[13px] font-medium leading-none text-slate-400 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                    >
-                                        Keep me signed in for 30 days
-                                    </label>
+                            </form>
+                        ) : activeRole === "party_worker" ? (
+                            <form onSubmit={handlePartyWorkerLogin} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[13px] font-semibold text-[#E2E8F0]">Party Joining Code</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                            <Shield className="h-4 w-4 text-slate-500" />
+                                        </div>
+                                        <Input
+                                            value={partyJoiningCode}
+                                            onChange={(e) => setPartyJoiningCode(e.target.value)}
+                                            placeholder="e.g. PJC-10023"
+                                            className="pl-10 bg-[#0B0914] border-slate-800/80 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-[46px] text-[13px] font-medium rounded-lg uppercase"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1.5">Enter your unique 8-character joining code.</p>
                                 </div>
-                            )}
 
-                            {error && (
-                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-medium text-red-500 text-center">
-                                    {error}
-                                </div>
-                            )}
-
-                            {message && (
-                                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-medium text-emerald-500 text-center">
-                                    {message}
-                                </div>
-                            )}
-
-                            <Button type="submit" className="w-full bg-[#3f21f1] hover:bg-[#3217d8] text-white font-semibold h-[46px] text-[13px] rounded-lg transition-all" disabled={isLoading}>
-                                {isLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <span className="flex items-center justify-center gap-2">
-                                        {isSignUp ? "Sign Up Now" : "Sign In to Portal"} <ArrowRight className="w-4 h-4" />
-                                    </span>
+                                {error && (
+                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-medium text-red-500 text-center">
+                                        {error}
+                                    </div>
                                 )}
-                            </Button>
 
-                            <div className="text-center pt-2">
-                                <span className="text-[13px] text-slate-400 font-medium">
-                                    {isSignUp ? "Already have an account? " : "New to SAMARTH? "}
-                                </span>
-                                <button
-                                    type="button"
+                                <Button type="submit" className="w-full bg-[#3f21f1] hover:bg-[#3217d8] text-white font-semibold h-[46px] text-[13px] rounded-lg transition-all shadow-[0_10px_20px_-5px_rgba(63,33,241,0.4)]" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            Verify Identity & Login <ArrowRight className="w-4 h-4" />
+                                        </span>
+                                    )}
+                                </Button>
+                            </form>
+                        ) : (
+                            <div className="py-4 space-y-8">
+                                <div className="text-center space-y-2">
+                                    <p className="text-[13px] text-slate-400 font-medium leading-relaxed uppercase">
+                                        Direct Executive access enabled for <br />
+                                        <span className="text-white font-bold tracking-tight">
+                                            {activeRole === "mayor" ? "THE MAYOR" : activeRole === "councillor" ? "THE COUNCILLOR" : "THE CONTRACTOR"}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <Button
                                     onClick={() => {
-                                        setIsSignUp(!isSignUp);
-                                        setError(null);
-                                        setMessage(null);
-                                        reset();
+                                        const mockUser = {
+                                            id: `mock-${activeRole}-id`,
+                                            name: activeRole === "mayor" ? "Honorable Mayor" : activeRole === "councillor" ? "Active Councillor" : "Fleet Contractor",
+                                            role: activeRole,
+                                            phone: "+91 9876543210",
+                                            isProfileComplete: true
+                                        };
+                                        setUser(mockUser);
+                                        router.push(`/dashboard/${activeRole}`);
                                     }}
-                                    className="text-[13px] text-[#4324f6] hover:text-indigo-400 font-semibold transition-colors"
+                                    className="w-full bg-[#3f21f1] hover:bg-[#3217d8] text-white font-bold h-[58px] text-[15px] rounded-xl transition-all shadow-[0_10px_20px_-5px_rgba(63,33,241,0.4)] relative overflow-hidden group"
                                 >
-                                    {isSignUp ? "Sign In instead" : "Create an account"}
-                                </button>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                    <span className="relative flex items-center justify-center gap-3">
+                                        Access {activeRole.charAt(0).toUpperCase() + activeRole.slice(1)} Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </span>
+                                </Button>
+
+                                <div className="pt-4 flex items-center justify-center gap-2 grayscale opacity-40">
+                                    <div className="h-px flex-1 bg-slate-800" />
+                                    <ShieldCheck className="w-4 h-4 text-slate-400" />
+                                    <div className="h-px flex-1 bg-slate-800" />
+                                </div>
                             </div>
-                        </form>
+                        )}
                     </div>
+
                 </div>
 
                 {/* Footer */}
